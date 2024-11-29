@@ -6,7 +6,7 @@ module.exports = async function deploy() {
 
   // Push the "docs" folder to the `gh-pages` branch using Git subtree
   exec(
-    "git subtree push --prefix docs origin gh-pages",
+    "git subtree push --prefix docs origin gh-pages --force",
     (err, stdout, stderr) => {
       if (err) {
         console.error(chalk.red("Deployment failed:"), stderr);

@@ -21,9 +21,9 @@ module.exports = async function generate() {
   const files = glob.sync("src/**/*.js");
   files.forEach((file) => {
     const content = fs.readFileSync(file, "utf-8");
-    console.log(content);
 
     if (content.includes("app.get")) {
+      console.log("hi");
       openapiSpec.paths["/example"] = {
         get: {
           summary: "Example endpoint",

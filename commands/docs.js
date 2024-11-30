@@ -41,17 +41,29 @@ module.exports = async function docs() {
         console.log(chalk.green("Documentation successfully generated!"));
         console.log(chalk.green(`Find the documentation in ${outputDir}`));
 
-        // Add logic to create a new branch 'docs' and push the docs folder to it
+        // Add logic to ensure the docs folder exists and is committed before pushing
         exec(
-          `git checkout --orphan docs && git reset --hard && git clean -fd && git add docs && git commit -m "Deploy generated docs" && git push origin docs --force`,
+          `git add docs && git commit -m "Add generated docs" || echo "No changes to commit"`,
           (err, stdout, stderr) => {
             if (err) {
-              console.error(
-                chalk.red("Failed to push docs to docs branch:"),
-                stderr
-              );
+              console.error(chalk.red("Failed to add docs folder:"), stderr);
             } else {
-              console.log(chalk.green("Docs pushed to 'docs' branch!"));
+              console.log(chalk.green("Docs folder staged successfully!"));
+
+              // Create or switch to the 'docs' branch and push the docs folder
+              exec(
+                `git checkout --orphan docs && git reset --hard && git clean -fd && git push origin docs --force`,
+                (err, stdout, stderr) => {
+                  if (err) {
+                    console.error(
+                      chalk.red("Failed to push docs to docs branch:"),
+                      stderr
+                    );
+                  } else {
+                    console.log(chalk.green("Docs pushed to 'docs' branch!"));
+                  }
+                }
+              );
             }
           }
         );

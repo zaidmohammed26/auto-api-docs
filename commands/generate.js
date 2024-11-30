@@ -63,9 +63,9 @@ module.exports = async function generate() {
     if (currentBranch !== "docs-br") {
       try {
         // Check if docs-br branch exists
-        execSync("git show-ref --verify --quiet refs/heads/docs-br");
-        console.log(chalk.green("Switching to existing docs-br branch..."));
+        // execSync("git show-ref --verify --quiet refs/heads/docs-br");
         execSync("git checkout docs-br");
+        console.log(chalk.green("Switching to existing docs-br branch..."));
       } catch {
         console.log(
           chalk.yellow("docs-br branch doesn't exist. Creating it...")

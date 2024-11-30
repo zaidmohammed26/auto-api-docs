@@ -128,6 +128,7 @@ module.exports = async function docs() {
 
   const openapiFile = path.resolve("openapi.yaml");
   const outputDir = path.resolve("docs");
+  console.log("hello");
 
   try {
     // Step 1: Switch to docs-br branch or create an orphan branch

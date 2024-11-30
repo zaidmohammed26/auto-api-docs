@@ -126,34 +126,61 @@ module.exports = async function docs() {
   console.log(chalk.blue("Generating API documentation..."));
 
   const openapiFile = path.resolve("openapi.yaml");
+  const outputDir = path.resolve("docs");
 
-  const commands = `
-  git fetch origin docs-br &&
-  git checkout docs-br || git checkout --orphan docs-br &&
-  git reset --hard &&
-  git clean -fd &&
-  `;
-
-  // Execute the git commands to prepare the branch
-  exec(commands, (err, stdout, stderr) => {
+  // First, switch to docs-br branch and reset it
+  exec("git fetch origin docs-br", (err, stdout, stderr) => {
     if (err) {
-      console.error(chalk.red("Failed to switch to docs-br branch:"), stderr);
+      console.error(chalk.red("Failed to fetch docs-br branch:"), stderr);
       return;
     }
 
-    console.log(chalk.green("Switched to docs-br branch!"));
-    const outputDir = path.resolve("docs");
-
-    // Use an OpenAPI documentation generator (e.g., Redoc CLI)
     exec(
-      `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`,
-      (err, stdout, stderr) => {
-        if (err) {
-          console.error(chalk.red("Failed to generate documentation:"), stderr);
-        } else {
-          console.log(chalk.green("Documentation successfully generated!"));
-          console.log(chalk.green(`Find the documentation in ${outputDir}`));
+      "git checkout docs-br || git checkout --orphan docs-br",
+      (checkoutErr, checkoutStdout, checkoutStderr) => {
+        if (checkoutErr) {
+          console.error(
+            chalk.red("Failed to checkout docs-br branch:"),
+            checkoutStderr
+          );
+          return;
         }
+
+        console.log(chalk.green("Switched to docs-br branch!"));
+
+        exec(
+          "git reset --hard && git clean -fd",
+          (resetErr, resetStdout, resetStderr) => {
+            if (resetErr) {
+              console.error(
+                chalk.red("Failed to reset and clean docs-br branch:"),
+                resetStderr
+              );
+              return;
+            }
+
+            // Generate the API documentation using Redoc CLI
+            exec(
+              `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`,
+              (docErr, docStdout, docStderr) => {
+                if (docErr) {
+                  console.error(
+                    chalk.red("Failed to generate documentation:"),
+                    docStderr
+                  );
+                  return;
+                }
+
+                console.log(
+                  chalk.green("Documentation successfully generated!")
+                );
+                console.log(
+                  chalk.green(`Find the documentation in ${outputDir}`)
+                );
+              }
+            );
+          }
+        );
       }
     );
   });

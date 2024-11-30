@@ -27,7 +27,7 @@ module.exports = async function docs() {
         const htmlContent = await fs.readFile(indexFile, "utf8");
         console.log(chalk.green("Index.html content loaded into memory"));
 
-        // Git commands to switch to gh-pages, create or modify index.html, and push changes
+        // Write the HTML content to the index.html file in the gh-pages branch
         const commands = `
           git fetch origin gh-pages &&
           git checkout gh-pages || git checkout --orphan gh-pages &&
@@ -37,10 +37,12 @@ module.exports = async function docs() {
           git push origin gh-pages -f
         `;
 
+        // Use fs.writeFile to directly write the content to the file
+        await fs.writeFile(path.resolve("index.html"), htmlContent, "utf8");
+
+        // Now, commit the changes to the gh-pages branch
         exec(commands, (gitErr, gitStdout, gitStderr) => {
           if (gitErr) {
-            console.log("jyfjghv");
-
             console.error(
               chalk.red("Failed to push docs to gh-pages:"),
               gitStderr

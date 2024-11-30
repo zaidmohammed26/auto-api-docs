@@ -8,10 +8,11 @@ module.exports = async function docs() {
 
   const openapiFile = path.resolve("openapi.yaml");
   const outputDir = path.resolve("docs");
+  const indexFile = path.join(outputDir, "index.html");
 
   // Use an OpenAPI documentation generator (e.g., Redoc CLI)
   exec(
-    `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`,
+    `npx redoc-cli bundle ${openapiFile} -o ${indexFile}`,
     async (err, stdout, stderr) => {
       if (err) {
         console.error(chalk.red("Failed to generate documentation:"), stderr);

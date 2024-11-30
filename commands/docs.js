@@ -39,6 +39,8 @@ module.exports = async function docs() {
 
         exec(commands, (gitErr, gitStdout, gitStderr) => {
           if (gitErr) {
+            console.log("jyfjghv");
+
             console.error(
               chalk.red("Failed to push docs to gh-pages:"),
               gitStderr

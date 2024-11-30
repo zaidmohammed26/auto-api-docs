@@ -95,7 +95,7 @@ module.exports = async function deploy() {
     git checkout gh-pages || git checkout --orphan gh-pages &&
     git reset --hard &&
     git clean -fd &&
-    git checkout main &&
+    git checkout docs-br &&
     git subtree split --prefix docs -b gh-pages-temp &&
     git push origin gh-pages-temp:gh-pages -f &&
     git branch -D gh-pages-temp

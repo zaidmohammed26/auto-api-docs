@@ -10,21 +10,51 @@ module.exports = async function docs() {
   const outputDir = path.resolve("docs");
   const indexFile = path.join(outputDir, "index.html");
 
-  // Use an OpenAPI documentation generator (e.g., Redoc CLI)
+  // Use an OpenAPI documentation generator (e.g., Redoc CLI) to generate the documentation
   exec(
     `npx redoc-cli bundle ${openapiFile} -o ${indexFile}`,
     async (err, stdout, stderr) => {
       if (err) {
         console.error(chalk.red("Failed to generate documentation:"), stderr);
-      } else {
-        console.log(chalk.green("Documentation successfully generated!"));
-        console.log(chalk.green(`Find the documentation in ${outputDir}`));
-        try {
-          const htmlContent = await fs.readFile(indexFile, "utf8");
-          console.log(htmlContent);
-        } catch (readError) {
-          console.error(chalk.red("Failed to read index.html:"), readError);
-        }
+        return;
+      }
+
+      console.log(chalk.green("Documentation successfully generated!"));
+      console.log(chalk.green(`Find the documentation in ${outputDir}`));
+
+      // Read the generated index.html into a variable
+      try {
+        const htmlContent = await fs.readFile(indexFile, "utf8");
+        console.log(chalk.green("Index.html content loaded into memory"));
+
+        // Now you can manipulate the htmlContent variable as needed
+        // Example: Log the HTML content
+        // console.log(htmlContent); // Or you can modify it here
+
+        // Push the docs folder (which contains index.html) to the gh-pages branch
+        const commands = `
+          git fetch origin gh-pages &&
+          git checkout gh-pages || git checkout --orphan gh-pages &&
+          git reset --hard &&
+          git clean -fd &&
+          git checkout main &&
+          git subtree split --prefix docs -b gh-pages-temp &&
+          git push origin gh-pages-temp:gh-pages -f &&
+          git branch -D gh-pages-temp
+        `;
+
+        exec(commands, (gitErr, gitStdout, gitStderr) => {
+          if (gitErr) {
+            console.error(
+              chalk.red("Failed to push docs to gh-pages:"),
+              gitStderr
+            );
+          } else {
+            console.log(chalk.green("Docs successfully pushed to gh-pages!"));
+          }
+        });
+      } catch (readError) {
+        console.error(chalk.red("Failed to read index.html:"), readError);
       }
     }
   );

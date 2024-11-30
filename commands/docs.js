@@ -183,22 +183,37 @@ module.exports = async function docs() {
         console.log(chalk.green(`Find the documentation in ${outputDir}`));
 
         // Step 3: Push the changes to the docs-br branch
-        exec(
-          `git add -f docs/index.html && git push --force origin docs-br`,
-          (pushErr, pushStdout, pushStderr) => {
-            if (pushErr) {
-              console.error(
-                chalk.red("Failed to push changes to docs-br branch:"),
-                pushStderr
-              );
-              return;
-            }
+        // exec(
+        //   `git add -f docs/index.html && git push --force origin docs-br`,
+        //   (pushErr, pushStdout, pushStderr) => {
+        //     if (pushErr) {
+        //       console.error(
+        //         chalk.red("Failed to push changes to docs-br branch:"),
+        //         pushStderr
+        //       );
+        //       return;
+        //     }
 
-            console.log(
-              chalk.green("Successfully pushed docs to docs-br branch!")
-            );
-          }
-        );
+        //     console.log(
+        //       chalk.green("Successfully pushed docs to docs-br branch!")
+        //     );
+        //   }
+        // );
+        try {
+          execSync("git add -f docs/index.html"); // Add the updated file to the staging area
+          // execSync(`git commit -m "Auto-generated OpenAPI spec"`);
+          execSync("git push --force origin docs-br"); // Force-push the updated branch
+          console.log(
+            chalk.green(
+              "Successfully pushed index.html spec to docs-br branch!"
+            )
+          );
+        } catch (error) {
+          console.error(
+            chalk.red("Failed to push changes to docs-br branch:"),
+            error
+          );
+        }
       }
     );
   }

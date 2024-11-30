@@ -61,12 +61,12 @@ module.exports = async function generate() {
       .toString()
       .trim();
     console.log(`current branch ${currentBranch}`);
-    execSync("git branch");
+    // execSync("git branch");
     if (currentBranch !== "docs-br") {
       try {
         // Check if docs-br branch exists
         // execSync("git show-ref --verify --quiet refs/heads/docs-br");
-        execSync("git checkout docs-br");
+        execSync("git checkout docs-br || git checkout --orphan docs-br ");
         console.log(chalk.green("Switching to existing docs-br branch..."));
       } catch {
         console.log(

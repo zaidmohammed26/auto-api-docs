@@ -57,26 +57,14 @@ module.exports = async function generate() {
 
   // Step 1: Ensure we are in the correct branch or create it if necessary
   try {
-    const currentBranch = execSync("git branch --show-current")
-      .toString()
-      .trim();
-    if (currentBranch !== "docs-br") {
-      try {
-        // Check if docs-br branch exists
-        // execSync("git show-ref --verify --quiet refs/heads/docs-br");
-        execSync("git checkout docs-br");
-        console.log(chalk.green("Switching to existing docs-br branch..."));
-      } catch {
-        console.log(
-          chalk.yellow("docs-br branch doesn't exist. Creating it...")
-        );
-        execSync("git checkout -b docs-br");
-      }
-    }
+    console.log(chalk.yellow("Checking out docs-br branch..."));
+    // execSync("git fetch origin docs-br"); // Fetch remote branch
+    execSync("git checkout docs-br || git checkout --orphan docs-br"); // Switch to docs-br or create orphan branch
+    console.log(chalk.green("Switched to docs-br branch!"));
   } catch (error) {
     console.error(
-      chalk.red("Git operation failed. Ensure you are in a git repository."),
-      error
+      chalk.red("Failed to switch to or create docs-br branch:"),
+      error.message
     );
     return;
   }

@@ -41,16 +41,94 @@ module.exports = async function docs() {
         await fs.writeFile(path.resolve("index.html"), htmlContent, "utf8");
 
         // Now, commit the changes to the gh-pages branch
-        exec(commands, (gitErr, gitStdout, gitStderr) => {
-          if (gitErr) {
-            console.error(
-              chalk.red("Failed to push docs to gh-pages:"),
-              gitStderr
+        exec(
+          "git fetch origin gh-pages",
+          (gitFetchErr, gitFetchStdout, gitFetchStderr) => {
+            if (gitFetchErr) {
+              console.error(
+                chalk.red("Failed to fetch gh-pages:"),
+                gitFetchStderr
+              );
+              return;
+            }
+
+            // Step 3: Checkout to the gh-pages branch or create a new orphan branch
+            exec(
+              "git checkout gh-pages || git checkout --orphan gh-pages",
+              (gitCheckoutErr, gitCheckoutStdout, gitCheckoutStderr) => {
+                if (gitCheckoutErr) {
+                  console.error(
+                    chalk.red("Failed to checkout gh-pages:"),
+                    gitCheckoutStderr
+                  );
+                  return;
+                }
+
+                // Step 4: Add the index.html file to staging
+                exec(
+                  ` echo "${htmlContent}" > index.html`,
+                  (gitAddErr, gitAddStdout, gitAddStderr) => {
+                    if (gitAddErr) {
+                      console.error(
+                        chalk.red("Failed to add index.html:"),
+                        gitAddStderr
+                      );
+                      return;
+                    }
+                    // Step 4: Add the index.html file to staging
+                    exec(
+                      "git add index.html",
+                      (gitAddErr, gitAddStdout, gitAddStderr) => {
+                        if (gitAddErr) {
+                          console.error(
+                            chalk.red("Failed to add index.html:"),
+                            gitAddStderr
+                          );
+                          return;
+                        }
+
+                        // Step 5: Commit the updated index.html file
+                        exec(
+                          'git commit -m "Update index.html with generated API documentation"',
+                          (gitCommitErr, gitCommitStdout, gitCommitStderr) => {
+                            if (gitCommitErr) {
+                              console.error(
+                                chalk.red("Failed to commit changes:"),
+                                gitCommitStderr
+                              );
+                              return;
+                            }
+
+                            // Step 6: Push the changes to gh-pages
+                            exec(
+                              "git push origin gh-pages -f",
+                              (gitPushErr, gitPushStdout, gitPushStderr) => {
+                                if (gitPushErr) {
+                                  console.error(
+                                    chalk.red(
+                                      "Failed to push docs to gh-pages:"
+                                    ),
+                                    gitPushStderr
+                                  );
+                                } else {
+                                  console.log(
+                                    chalk.green(
+                                      "Docs successfully pushed to gh-pages!"
+                                    )
+                                  );
+                                }
+                              }
+                            );
+                          }
+                        );
+                      }
+                    );
+                  }
+                );
+              }
             );
-          } else {
-            console.log(chalk.green("Docs successfully pushed to gh-pages!"));
           }
-        });
+        );
       } catch (readError) {
         console.error(chalk.red("Failed to read index.html:"), readError);
       }

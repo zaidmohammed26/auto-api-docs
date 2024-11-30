@@ -58,9 +58,15 @@ module.exports = async function generate() {
   // Step 1: Ensure we are in the correct branch or create it if necessary
   try {
     console.log(chalk.yellow("Checking out docs-br branch..."));
-    // execSync("git fetch origin docs-br"); // Fetch remote branch
     execSync("git checkout docs-br || git checkout --orphan docs-br"); // Switch to docs-br or create orphan branch
     console.log(chalk.green("Switched to docs-br branch!"));
+
+    // If it's an orphan branch, ensure it has an initial commit
+    const status = execSync("git status --porcelain").toString().trim();
+    if (status) {
+      execSync("git add -A");
+      execSync('git commit -m "Initial commit on docs-br branch"');
+    }
   } catch (error) {
     console.error(
       chalk.red("Failed to switch to or create docs-br branch:"),
@@ -109,10 +115,10 @@ module.exports = async function generate() {
     return;
   }
 
-  // Step 5: Add the updated file and force-push to docs-br
+  // Step 5: Add the updated file and push to docs-br
   try {
     execSync("git add -f openapi.yaml"); // Add the updated file to the staging area
-    // execSync(`git commit -m "Auto-generated OpenAPI spec"`);
+    execSync('git commit -m "Auto-generated OpenAPI spec" --allow-empty'); // Allow empty commits if no changes
     execSync("git push --force origin docs-br"); // Force-push the updated branch
     console.log(
       chalk.green("Successfully pushed OpenAPI spec to docs-br branch!")
@@ -120,7 +126,7 @@ module.exports = async function generate() {
   } catch (error) {
     console.error(
       chalk.red("Failed to push changes to docs-br branch:"),
-      error
+      error.message
     );
   }
 };

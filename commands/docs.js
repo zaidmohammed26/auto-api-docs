@@ -27,20 +27,14 @@ module.exports = async function docs() {
         const htmlContent = await fs.readFile(indexFile, "utf8");
         console.log(chalk.green("Index.html content loaded into memory"));
 
-        // Now you can manipulate the htmlContent variable as needed
-        // Example: Log the HTML content
-        // console.log(htmlContent); // Or you can modify it here
-
-        // Push the docs folder (which contains index.html) to the gh-pages branch
+        // Git commands to switch to gh-pages, create or modify index.html, and push changes
         const commands = `
           git fetch origin gh-pages &&
           git checkout gh-pages || git checkout --orphan gh-pages &&
-          git reset --hard &&
-          git clean -fd &&
-          git checkout main &&
-          git subtree split --prefix docs -b gh-pages-temp &&
-          git push origin gh-pages-temp:gh-pages -f &&
-          git branch -D gh-pages-temp
+          echo "${htmlContent}" > index.html &&
+          git add index.html &&
+          git commit -m "Update index.html with generated API documentation" &&
+          git push origin gh-pages -f
         `;
 
         exec(commands, (gitErr, gitStdout, gitStderr) => {

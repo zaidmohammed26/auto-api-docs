@@ -204,7 +204,7 @@ module.exports = async function docs() {
         // );
         try {
           execSync("git add -f docs/index.html"); // Add the updated file to the staging area
-          execSync(`git commit -m "Auto-generated OpenAPI spec"`);
+          execSync(`git commit -m "Auto-generated OpenAPI spec" --allow-empty`);
           execSync("git push --force origin docs-br"); // Force-push the updated branch
           console.log(
             chalk.green(

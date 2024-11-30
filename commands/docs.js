@@ -134,13 +134,14 @@ module.exports = async function docs() {
   git clean -fd &&
   `;
 
-  exec(commands, (err, stdout, stderr) => {
+  // Execute the git commands to prepare the branch
+  exec(gitCommands, (err, stdout, stderr) => {
     if (err) {
-      console.error(chalk.red("Failed to generate documentation:"), stderr);
-    } else {
-      console.log(chalk.green("Documentation successfully generated!"));
-      console.log(chalk.green(`Find the documentation in ${outputDir}`));
+      console.error(chalk.red("Failed to switch to docs-br branch:"), stderr);
+      return;
     }
+
+    console.log(chalk.green("Switched to docs-br branch!"));
     const outputDir = path.resolve("docs");
 
     // Use an OpenAPI documentation generator (e.g., Redoc CLI)

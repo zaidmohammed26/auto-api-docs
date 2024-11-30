@@ -124,7 +124,7 @@ module.exports = async function deploy() {
     await runCommand("git clean -fd", "Cleaned untracked files");
 
     // Checkout to the main branch where we generate the documentation
-    await runCommand("git checkout main", "Checked out main branch");
+    await runCommand("git checkout docs-br", "Checked out main branch");
 
     // Split the docs folder and create a temporary branch
     await runCommand(

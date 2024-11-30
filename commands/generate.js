@@ -60,6 +60,7 @@ module.exports = async function generate() {
     const currentBranch = execSync("git branch --show-current")
       .toString()
       .trim();
+    console.log(`current branch ${currentBranch}`);
     if (currentBranch !== "docs-br") {
       try {
         // Check if docs-br branch exists

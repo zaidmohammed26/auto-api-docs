@@ -118,7 +118,7 @@
 //     }
 //   );
 // };
-const { exec, execSync } = require("child_process");
+const { execSync } = require("child_process");
 const chalk = require("chalk");
 const fs = require("fs");
 const path = require("path");
@@ -130,27 +130,18 @@ module.exports = async function docs() {
   const outputDir = path.resolve("docs");
 
   try {
-    // Step 1: Check if docs-br branch exists remotely
+    // Step 1: Switch to docs-br branch or create an orphan branch
     try {
-      // Check if the remote branch exists
-      const remoteBranches = execSync("git ls-remote --heads origin docs-br")
-        .toString()
-        .trim();
-
-      if (remoteBranches.includes("refs/heads/docs-br")) {
-        console.log(chalk.yellow("Remote docs-br branch found. Fetching..."));
-        execSync("git fetch origin docs-br"); // Fetch the branch
-        execSync("git checkout docs-br"); // Switch to the branch
-      } else {
-        console.log(
-          chalk.yellow("docs-br branch doesn't exist. Creating it...")
-        );
-        execSync("git checkout -b docs-br"); // Create and switch to the branch
-      }
-
+      console.log(chalk.yellow("Checking out docs-br branch..."));
+      execSync("git fetch origin docs-br"); // Fetch remote branch
+      execSync("git checkout docs-br || git checkout --orphan docs-br"); // Switch to docs-br or create orphan branch
       console.log(chalk.green("Switched to docs-br branch!"));
     } catch (error) {
-      console.error(chalk.red("Error managing docs-br branch:"), error.message);
+      console.error(
+        chalk.red("Failed to switch to or create docs-br branch:"),
+        error.message
+      );
+      return;
     }
 
     // Step 2: Generate documentation using Redoc CLI

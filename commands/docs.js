@@ -126,7 +126,6 @@ module.exports = async function docs() {
   console.log(chalk.blue("Generating API documentation..."));
 
   const openapiFile = path.resolve("openapi.yaml");
-  const outputDir = path.resolve("docs");
 
   // First, try to fetch the branch, then check if it exists
   exec("git fetch origin", (fetchErr, fetchStdout, fetchStderr) => {
@@ -172,7 +171,7 @@ module.exports = async function docs() {
   // Function to handle switching to docs-br and generating documentation
   function switchToDocsBranch() {
     exec(
-      "git checkout docs-br",
+      "git checkout docs-br", // Switch to docs-br branch
       (checkoutErr, checkoutStdout, checkoutStderr) => {
         if (checkoutErr) {
           console.error(
@@ -185,7 +184,7 @@ module.exports = async function docs() {
         console.log(chalk.green("Switched to docs-br branch!"));
 
         exec(
-          "git reset --hard && git clean -fd",
+          "git reset --hard && git clean -fd", // Clean the branch
           (resetErr, resetStdout, resetStderr) => {
             if (resetErr) {
               console.error(
@@ -195,9 +194,10 @@ module.exports = async function docs() {
               return;
             }
 
+            const outputDir = path.resolve("docs"); // Set output directory for docs-br branch
             // Generate the API documentation using Redoc CLI
             exec(
-              `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`,
+              `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`, // Generate the HTML file
               (docErr, docStdout, docStderr) => {
                 if (docErr) {
                   console.error(
@@ -212,6 +212,24 @@ module.exports = async function docs() {
                 );
                 console.log(
                   chalk.green(`Find the documentation in ${outputDir}`)
+                );
+
+                // Now, push the generated documentation to the docs-br branch
+                exec(
+                  "git add docs/index.html && git commit -m 'Add generated API docs' && git push origin docs-br", // Add, commit, and push to docs-br
+                  (pushErr, pushStdout, pushStderr) => {
+                    if (pushErr) {
+                      console.error(
+                        chalk.red("Failed to push docs to docs-br:"),
+                        pushStderr
+                      );
+                      return;
+                    }
+
+                    console.log(
+                      chalk.green("Successfully pushed docs to docs-br branch!")
+                    );
+                  }
                 );
               }
             );

@@ -11,12 +11,18 @@ module.exports = async function docs() {
   // Use an OpenAPI documentation generator (e.g., Redoc CLI)
   exec(
     `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`,
-    (err, stdout, stderr) => {
+    async (err, stdout, stderr) => {
       if (err) {
         console.error(chalk.red("Failed to generate documentation:"), stderr);
       } else {
         console.log(chalk.green("Documentation successfully generated!"));
         console.log(chalk.green(`Find the documentation in ${outputDir}`));
+        try {
+          const htmlContent = await fs.readFile(indexFile, "utf8");
+          console.log(htmlContent);
+        } catch (readError) {
+          console.error(chalk.red("Failed to read index.html:"), readError);
+        }
       }
     }
   );

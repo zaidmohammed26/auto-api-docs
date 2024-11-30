@@ -122,6 +122,7 @@ const { exec } = require("child_process");
 const chalk = require("chalk");
 const fs = require("fs");
 const path = require("path");
+const { execSync } = require("child_process");
 
 module.exports = async function docs() {
   console.log(chalk.blue("Generating API documentation..."));

@@ -184,7 +184,7 @@ module.exports = async function docs() {
 
         // Step 3: Push the changes to the docs-br branch
         exec(
-          `git add docs/index.html && git commit -m "adding index html" && git push --force origin docs-br`,
+          `git add -f docs/index.html && git push --force origin docs-br`,
           (pushErr, pushStdout, pushStderr) => {
             if (pushErr) {
               console.error(

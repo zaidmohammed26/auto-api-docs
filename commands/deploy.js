@@ -90,14 +90,26 @@ const { exec } = require("child_process");
 module.exports = async function deploy() {
   console.log(chalk.blue("Deploying API documentation..."));
 
-  // Create a function to run each command in sequence
+  // Create the commands to run
+  const commands = [
+    // Fetch gh-pages and create if not exists
+    "git fetch origin gh-pages || git checkout --orphan gh-pages",
+    "git reset --hard",
+    "git clean -fd",
+    "git checkout main", // Ensure you are on the main branch
+    "git subtree split --prefix docs -b gh-pages-temp", // Create temp branch from docs folder
+    "git push origin gh-pages-temp:gh-pages -f", // Force push the temp branch to gh-pages
+    "git branch -D gh-pages-temp", // Clean up the temp branch
+  ];
+
+  // Function to run a command and log the results
   const runCommand = (command, successMessage) => {
     return new Promise((resolve, reject) => {
       console.log(chalk.blue(`Running: ${command}`));
       exec(command, (err, stdout, stderr) => {
         if (err) {
-          console.error(chalk.red(`Error: ${stderr}`));
-          reject(stderr);
+          console.error(chalk.red(`Error running command: ${command}`), stderr);
+          reject(err);
         } else {
           console.log(chalk.green(successMessage || `Success: ${command}`));
           resolve(stdout);
@@ -107,48 +119,14 @@ module.exports = async function deploy() {
   };
 
   try {
-    // Ensure we are on the main branch
-    await runCommand("git checkout main", "Checked out main branch");
-
-    // Create or fetch the gh-pages branch
-    await runCommand("git fetch origin gh-pages", "Fetched gh-pages branch");
-
-    // If the gh-pages branch doesn't exist, create it
-    await runCommand(
-      "git checkout gh-pages || git checkout --orphan gh-pages",
-      "Checked out or created gh-pages branch"
-    );
-
-    // Reset and clean the working directory
-    await runCommand("git reset --hard", "Reset working directory");
-    await runCommand("git clean -fd", "Cleaned untracked files");
-
-    // Checkout to the main branch where we generate the documentation
-    await runCommand("git checkout docs-br", "Checked out main branch");
-
-    // Split the docs folder and create a temporary branch
-    await runCommand(
-      "git subtree split --prefix docs -b gh-pages-temp",
-      "Created temporary gh-pages branch"
-    );
-
-    // Push the docs folder to gh-pages branch
-    await runCommand(
-      "git push origin gh-pages-temp:gh-pages -f",
-      "Pushed documentation to gh-pages"
-    );
-
-    // Delete the temporary branch
-    await runCommand(
-      "git branch -D gh-pages-temp",
-      "Deleted temporary gh-pages branch"
-    );
-
+    // Execute commands sequentially
+    for (let command of commands) {
+      await runCommand(command, `Successfully ran: ${command}`);
+    }
     console.log(
-      chalk.green("Documentation deployed successfully to GitHub Pages!")
+      chalk.green("Documentation successfully deployed to GitHub Pages!")
     );
   } catch (error) {
-    console.error(chalk.red("Deployment failed!"));
-    console.error(error);
+    console.error(chalk.red("Deployment failed!"), error);
   }
 };

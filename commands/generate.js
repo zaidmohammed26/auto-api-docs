@@ -62,8 +62,6 @@ module.exports = async function generate() {
       .trim();
     if (currentBranch !== "docs-br") {
       try {
-        // Check if docs-br branch exists
-        // execSync("git show-ref --verify --quiet refs/heads/docs-br");
         execSync("git checkout docs-br");
         console.log(chalk.green("Switching to existing docs-br branch..."));
       } catch {
@@ -81,7 +79,7 @@ module.exports = async function generate() {
     return;
   }
 
-  // Step 2: Define a basic OpenAPI structure
+  // Step 2: Define the base OpenAPI structure
   let openapiSpec = {
     openapi: "3.0.0",
     info: {
@@ -92,24 +90,46 @@ module.exports = async function generate() {
     paths: {},
   };
 
-  // Step 3: Scan for API route definitions
-  const files = glob.sync("src/**/*.js");
-  files.forEach((file) => {
-    const content = fs.readFileSync(file, "utf-8");
+  // Step 3: Parse the auto-docs-log.json file
+  try {
+    const logData = JSON.parse(
+      fs.readFileSync("src/auto-docs-log.json", "utf-8")
+    );
 
-    if (content.includes("app.get")) {
-      openapiSpec.paths["/example"] = {
-        get: {
-          summary: "Example endpoint",
-          responses: {
-            200: {
-              description: "Successful response",
-            },
+    logData.forEach((entry) => {
+      const { method, url } = entry;
+
+      if (!openapiSpec.paths[url]) {
+        openapiSpec.paths[url] = {}; // Initialize the path object
+      }
+
+      openapiSpec.paths[url][method.toLowerCase()] = {
+        tags: ["Default"],
+        summary: `Handle ${method} request for ${url}`,
+        operationId: `${method}${url.replace(/[^\w]/g, "")}`,
+        parameters: [],
+        requestBody: {
+          description: "",
+          content: {},
+          required: method === "POST", // Require body only for POST requests
+        },
+        responses: {
+          200: {
+            description: "Successful response",
+            headers: {},
           },
         },
+        deprecated: false,
+        security: [],
       };
-    }
-  });
+    });
+  } catch (error) {
+    console.error(
+      chalk.red("Failed to read or parse auto-docs-log.json:"),
+      error
+    );
+    return;
+  }
 
   // Step 4: Write the OpenAPI spec to a YAML file
   const outputFile = "openapi.yaml";
@@ -123,9 +143,8 @@ module.exports = async function generate() {
 
   // Step 5: Add the updated file and force-push to docs-br
   try {
-    execSync("git add -f openapi.yaml"); // Add the updated file to the staging area
-    // execSync(`git commit -m "Auto-generated OpenAPI spec"`);
-    execSync("git push --force origin docs-br"); // Force-push the updated branch
+    execSync("git add -f openapi.yaml");
+    execSync("git push --force origin docs-br");
     console.log(
       chalk.green("Successfully pushed OpenAPI spec to docs-br branch!")
     );

@@ -70,6 +70,7 @@ module.exports = async function init() {
   );
 
   const docsDir = path.resolve("docs"); // Define the path for the docs folder
+  const indexFile = path.join(docsDir, "index.html"); // Define the path for the index.html file
   const workflowDir = ".github/workflows";
   const workflowFile = path.join(workflowDir, "auto-docs.yml");
 
@@ -113,10 +114,14 @@ jobs:
         run: auto-docs deploy
 `;
 
-  // Create the docs folder if it doesn't exist
   try {
-    await fs.ensureDir(docsDir); // Create the docs folder
+    // Create the docs folder if it doesn't exist
+    await fs.ensureDir(docsDir);
     console.log(chalk.green("Docs folder created successfully"));
+
+    // Create an empty index.html file in the docs folder
+    await fs.writeFile(indexFile, "", "utf8"); // Create an empty index.html
+    console.log(chalk.green("index.html file created successfully"));
 
     // Create the GitHub Actions workflow directory and file
     await fs.ensureDir(workflowDir);

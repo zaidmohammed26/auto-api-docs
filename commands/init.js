@@ -18,6 +18,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: read
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -25,23 +29,30 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: "16"
 
       - name: Install dependencies
         run: npm install
 
+      - name: Install auto-docs globally from GitHub repository
+        run: sudo npm install -g git+https://github.com/zaidmohammed26/auto-api-docs.git
+
       - name: Generate OpenAPI spec
-        run: npx auto-docs generate
+        run: auto-docs generate
 
       - name: Generate documentation
-        run: npx auto-docs docs
+        run: auto-docs docs
 
       - name: Deploy documentation
-        run: npx auto-docs deploy
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: auto-docs deploy
+
 `;
 
   // Create the GitHub Actions workflow directory and file
   try {
+    ciContent.replace(/\\\$/g, "$");
     await fs.ensureDir(workflowDir);
     await fs.writeFile(workflowFile, ciContent);
     console.log(chalk.green(`Workflow file created at ${workflowFile}`));

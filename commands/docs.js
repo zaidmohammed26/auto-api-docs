@@ -133,7 +133,7 @@ module.exports = async function docs() {
     // Step 1: Switch to docs-br branch or create an orphan branch
     try {
       console.log(chalk.yellow("Checking out docs-br branch..."));
-      execSync("git fetch origin docs-br"); // Fetch remote branch
+      // execSync("git fetch origin docs-br"); // Fetch remote branch
       execSync("git checkout docs-br || git checkout --orphan docs-br"); // Switch to docs-br or create orphan branch
       console.log(chalk.green("Switched to docs-br branch!"));
     } catch (error) {

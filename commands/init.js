@@ -106,18 +106,56 @@ jobs:
         run: npm install
 
       - name: Install auto-docs globally from GitHub repository
-        run: sudo npm install -g git+https://github.com/zaidmohammed26/auto-api-docs.git
+        run: npm install -g git+https://github.com/zaidmohammed26/auto-api-docs.git
 
       - name: Generate OpenAPI spec
-        run: auto-docs generate
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          auto-docs generate
+          git add .
+          git commit -a -m "generate"
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: \${{ secrets.GITHUB_TOKEN }}
+          branch: \${{ github.docs-br }}
 
       - name: Generate documentation
-        run: auto-docs docs
+        env:
+          GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          auto-docs docs
+      #     git add .
+      #     git commit -a -m "docs"
+
+      # - name: Push changes
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: \${{ secrets.GITHUB_TOKEN }}
+      #     branch: \${{ github.docs-br }}
 
       - name: Deploy documentation
         env:
           GITHUB_TOKEN: \${{ secrets.GITHUB_TOKEN }}
-        run: auto-docs deploy
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          auto-docs deploy
+      #     git add .
+      #     git commit -a -m "deploy"
+
+      # - name: Push changes
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: \${{ secrets.GITHUB_TOKEN }}
+      #     branch: \${{ github.gh-pages }}
+
 
 `;
 

@@ -135,7 +135,7 @@ module.exports = async function docs() {
   `;
 
   // Execute the git commands to prepare the branch
-  exec(gitCommands, (err, stdout, stderr) => {
+  exec(commands, (err, stdout, stderr) => {
     if (err) {
       console.error(chalk.red("Failed to switch to docs-br branch:"), stderr);
       return;

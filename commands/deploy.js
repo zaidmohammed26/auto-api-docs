@@ -94,8 +94,8 @@ module.exports = async function deploy() {
   const commands = [
     // Fetch gh-pages and create if not exists
     "git fetch origin gh-pages || git checkout --orphan gh-pages",
-    "git reset --hard",
-    "git clean -fd",
+    // "git reset --hard",
+    // "git clean -fd",
     "git checkout docs-br", // Ensure you are on the main branch
     "git subtree split --prefix docs -b gh-pages-temp", // Create temp branch from docs folder
     "git push origin gh-pages-temp:gh-pages -f", // Force push the temp branch to gh-pages

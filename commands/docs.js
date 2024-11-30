@@ -126,116 +126,18 @@ module.exports = async function docs() {
   console.log(chalk.blue("Generating API documentation..."));
 
   const openapiFile = path.resolve("openapi.yaml");
+  const outputDir = path.resolve("docs");
 
-  // First, try to fetch the branch, then check if it exists
-  exec("git fetch origin", (fetchErr, fetchStdout, fetchStderr) => {
-    if (fetchErr) {
-      console.error(chalk.red("Failed to fetch from origin:"), fetchStderr);
-      return;
+  // Use an OpenAPI documentation generator (e.g., Redoc CLI)
+  exec(
+    `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`,
+    (err, stdout, stderr) => {
+      if (err) {
+        console.error(chalk.red("Failed to generate documentation:"), stderr);
+      } else {
+        console.log(chalk.green("Documentation successfully generated!"));
+        console.log(chalk.green(`Find the documentation in ${outputDir}`));
+      }
     }
-
-    exec(
-      "git show-ref refs/remotes/origin/docs-br",
-      (checkErr, checkStdout, checkStderr) => {
-        if (checkErr) {
-          console.log(
-            chalk.yellow(
-              "docs-br branch doesn't exist remotely. Creating it..."
-            )
-          );
-
-          // If the branch doesn't exist, create it from main and push it to origin
-          exec(
-            "git checkout main && git checkout -b docs-br && git push -u origin docs-br",
-            (createErr, createStdout, createStderr) => {
-              if (createErr) {
-                console.error(
-                  chalk.red("Failed to create docs-br branch:"),
-                  createStderr
-                );
-                return;
-              }
-
-              console.log(chalk.green("Created and pushed docs-br branch!"));
-              switchToDocsBranch();
-            }
-          );
-        } else {
-          console.log(chalk.green("Found docs-br branch. Switching to it..."));
-          switchToDocsBranch();
-        }
-      }
-    );
-  });
-
-  // Function to handle switching to docs-br and generating documentation
-  function switchToDocsBranch() {
-    exec(
-      "git checkout docs-br", // Switch to docs-br branch
-      (checkoutErr, checkoutStdout, checkoutStderr) => {
-        if (checkoutErr) {
-          console.error(
-            chalk.red("Failed to checkout docs-br branch:"),
-            checkoutStderr
-          );
-          return;
-        }
-
-        console.log(chalk.green("Switched to docs-br branch!"));
-
-        exec(
-          "git reset --hard && git clean -fd", // Clean the branch
-          (resetErr, resetStdout, resetStderr) => {
-            if (resetErr) {
-              console.error(
-                chalk.red("Failed to reset and clean docs-br branch:"),
-                resetStderr
-              );
-              return;
-            }
-
-            const outputDir = path.resolve("docs"); // Set output directory for docs-br branch
-            // Generate the API documentation using Redoc CLI
-            exec(
-              `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`, // Generate the HTML file
-              (docErr, docStdout, docStderr) => {
-                if (docErr) {
-                  console.error(
-                    chalk.red("Failed to generate documentation:"),
-                    docStderr
-                  );
-                  return;
-                }
-
-                console.log(
-                  chalk.green("Documentation successfully generated!")
-                );
-                console.log(
-                  chalk.green(`Find the documentation in ${outputDir}`)
-                );
-
-                // Now, push the generated documentation to the docs-br branch
-                exec(
-                  "git add docs/index.html && git commit -m 'Add generated API docs' && git push origin docs-br", // Add, commit, and push to docs-br
-                  (pushErr, pushStdout, pushStderr) => {
-                    if (pushErr) {
-                      console.error(
-                        chalk.red("Failed to push docs to docs-br:"),
-                        pushStderr
-                      );
-                      return;
-                    }
-
-                    console.log(
-                      chalk.green("Successfully pushed docs to docs-br branch!")
-                    );
-                  }
-                );
-              }
-            );
-          }
-        );
-      }
-    );
-  }
+  );
 };

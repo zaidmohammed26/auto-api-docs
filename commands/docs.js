@@ -1,3 +1,4 @@
+const fs = require("fs-extra");
 const { exec } = require("child_process");
 const chalk = require("chalk");
 const path = require("path");

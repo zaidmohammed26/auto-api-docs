@@ -128,15 +128,51 @@ module.exports = async function docs() {
   const openapiFile = path.resolve("openapi.yaml");
   const outputDir = path.resolve("docs");
 
-  // First, switch to docs-br branch and reset it
-  exec("git fetch origin docs-br", (err, stdout, stderr) => {
-    if (err) {
-      console.error(chalk.red("Failed to fetch docs-br branch:"), stderr);
+  // First, try to fetch the branch, then check if it exists
+  exec("git fetch origin", (fetchErr, fetchStdout, fetchStderr) => {
+    if (fetchErr) {
+      console.error(chalk.red("Failed to fetch from origin:"), fetchStderr);
       return;
     }
 
     exec(
-      "git checkout docs-br || git checkout --orphan docs-br",
+      "git show-ref refs/remotes/origin/docs-br",
+      (checkErr, checkStdout, checkStderr) => {
+        if (checkErr) {
+          console.log(
+            chalk.yellow(
+              "docs-br branch doesn't exist remotely. Creating it..."
+            )
+          );
+
+          // If the branch doesn't exist, create it from main and push it to origin
+          exec(
+            "git checkout main && git checkout -b docs-br && git push -u origin docs-br",
+            (createErr, createStdout, createStderr) => {
+              if (createErr) {
+                console.error(
+                  chalk.red("Failed to create docs-br branch:"),
+                  createStderr
+                );
+                return;
+              }
+
+              console.log(chalk.green("Created and pushed docs-br branch!"));
+              switchToDocsBranch();
+            }
+          );
+        } else {
+          console.log(chalk.green("Found docs-br branch. Switching to it..."));
+          switchToDocsBranch();
+        }
+      }
+    );
+  });
+
+  // Function to handle switching to docs-br and generating documentation
+  function switchToDocsBranch() {
+    exec(
+      "git checkout docs-br",
       (checkoutErr, checkoutStdout, checkoutStderr) => {
         if (checkoutErr) {
           console.error(
@@ -183,5 +219,5 @@ module.exports = async function docs() {
         );
       }
     );
-  });
+  }
 };

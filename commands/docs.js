@@ -157,6 +157,8 @@ module.exports = async function docs() {
         }
       );
     } else {
+      console.log(`on branch ${currentBranch}`);
+
       generateDocs();
     }
   });

@@ -77,35 +77,31 @@ module.exports = async function docs() {
                     }
 
                     // Step 5: Commit the updated index.html file
-                    exec(
-                      'git commit -m "Update index.html with generated API documentation"',
-                      (gitCommitErr, gitCommitStdout, gitCommitStderr) => {
-                        if (gitCommitErr) {
-                          console.error(
-                            chalk.red("Failed to commit changes:"),
-                            gitCommitStderr
-                          );
-                          return;
-                        }
+                    // exec(
+                    //   'git commit -m "Update index.html with generated API documentation"',
+                    //   (gitCommitErr, gitCommitStdout, gitCommitStderr) => {
+                    //     if (gitCommitErr) {
+                    //       console.error(
+                    //         chalk.red("Failed to commit changes:"),
+                    //         gitCommitStderr
+                    //       );
+                    //       return;
+                    //     }
 
-                        // Step 6: Push the changes to gh-pages
-                        exec(
-                          "git push origin gh-pages -f",
-                          (gitPushErr, gitPushStdout, gitPushStderr) => {
-                            if (gitPushErr) {
-                              console.error(
-                                chalk.red("Failed to push docs to gh-pages:"),
-                                gitPushStderr
-                              );
-                            } else {
-                              console.log(
-                                chalk.green(
-                                  "Docs successfully pushed to gh-pages!"
-                                )
-                              );
-                            }
-                          }
-                        );
+                    // Step 6: Push the changes to gh-pages
+                    exec(
+                      "git push origin gh-pages -f",
+                      (gitPushErr, gitPushStdout, gitPushStderr) => {
+                        if (gitPushErr) {
+                          console.error(
+                            chalk.red("Failed to push docs to gh-pages:"),
+                            gitPushStderr
+                          );
+                        } else {
+                          console.log(
+                            chalk.green("Docs successfully pushed to gh-pages!")
+                          );
+                        }
                       }
                     );
                   }
@@ -114,6 +110,8 @@ module.exports = async function docs() {
             );
           }
         );
+        //   }
+        // );
       } catch (readError) {
         console.error(chalk.red("Failed to read index.html:"), readError);
       }

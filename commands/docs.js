@@ -118,11 +118,10 @@
 //     }
 //   );
 // };
-const { exec } = require("child_process");
+const { exec, execSync } = require("child_process");
 const chalk = require("chalk");
 const fs = require("fs");
 const path = require("path");
-const { execSync } = require("child_process");
 
 module.exports = async function docs() {
   console.log(chalk.blue("Generating API documentation..."));
@@ -130,41 +129,24 @@ module.exports = async function docs() {
   const openapiFile = path.resolve("openapi.yaml");
   const outputDir = path.resolve("docs");
 
-  // Step 1: Ensure we are on the docs-br branch
-  exec("git branch --show-current", (branchErr, branchStdout) => {
-    if (branchErr) {
-      console.error(chalk.red("Failed to check current branch."), branchErr);
-      return;
-    }
+  try {
+    // Step 1: Check if docs-br branch exists remotely
+    const remoteBranches = execSync("git ls-remote --heads origin docs-br")
+      .toString()
+      .trim();
 
-    const currentBranch = branchStdout.trim();
-
-    if (currentBranch !== "docs-br") {
-      console.log(chalk.yellow("Switching to docs-br branch..."));
-      exec(
-        "git fetch origin docs-br && git checkout docs-br || git checkout -b docs-br",
-        (switchErr, switchStdout) => {
-          if (switchErr) {
-            console.error(
-              chalk.red("Failed to switch to docs-br branch."),
-              switchErr
-            );
-            return;
-          }
-
-          console.log(chalk.green("Switched to docs-br branch!"));
-          generateDocs();
-        }
-      );
+    if (remoteBranches) {
+      console.log(chalk.yellow("Remote docs-br branch found. Fetching..."));
+      execSync("git fetch origin docs-br");
+      execSync("git checkout docs-br");
     } else {
-      console.log(`on branch ${currentBranch}`);
-
-      generateDocs();
+      console.log(chalk.yellow("docs-br branch doesn't exist. Creating it..."));
+      execSync("git checkout -b docs-br");
     }
-  });
 
-  // Step 2: Generate documentation using Redoc CLI
-  function generateDocs() {
+    console.log(chalk.green("Switched to docs-br branch!"));
+
+    // Step 2: Generate documentation using Redoc CLI
     if (!fs.existsSync(openapiFile)) {
       console.error(chalk.red(`OpenAPI spec file (${openapiFile}) not found.`));
       return;
@@ -174,50 +156,20 @@ module.exports = async function docs() {
       fs.mkdirSync(outputDir, { recursive: true });
     }
 
-    exec(
-      `npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`,
-      (err, stdout, stderr) => {
-        if (err) {
-          console.error(chalk.red("Failed to generate documentation:"), stderr);
-          return;
-        }
+    execSync(`npx redoc-cli bundle ${openapiFile} -o ${outputDir}/index.html`);
+    console.log(chalk.green("Documentation successfully generated!"));
 
-        console.log(chalk.green("Documentation successfully generated!"));
-        console.log(chalk.green(`Find the documentation in ${outputDir}`));
-
-        // Step 3: Push the changes to the docs-br branch
-        // exec(
-        //   `git add -f docs/index.html && git push --force origin docs-br`,
-        //   (pushErr, pushStdout, pushStderr) => {
-        //     if (pushErr) {
-        //       console.error(
-        //         chalk.red("Failed to push changes to docs-br branch:"),
-        //         pushStderr
-        //       );
-        //       return;
-        //     }
-
-        //     console.log(
-        //       chalk.green("Successfully pushed docs to docs-br branch!")
-        //     );
-        //   }
-        // );
-        try {
-          execSync("git add -f docs/index.html"); // Add the updated file to the staging area
-          execSync(`git commit -m "Auto-generated OpenAPI spec" --allow-empty`);
-          execSync("git push --force origin docs-br"); // Force-push the updated branch
-          console.log(
-            chalk.green(
-              "Successfully pushed index.html spec to docs-br branch!"
-            )
-          );
-        } catch (error) {
-          console.error(
-            chalk.red("Failed to push changes to docs-br branch:"),
-            error
-          );
-        }
-      }
-    );
+    // Step 3: Push the changes to the docs-br branch
+    const status = execSync("git status --porcelain").toString().trim();
+    if (status) {
+      execSync("git add -f docs/index.html");
+      execSync(`git commit -m "Auto-generated OpenAPI spec" --allow-empty`);
+      execSync("git push --force origin docs-br");
+      console.log(chalk.green("Successfully pushed docs to docs-br branch!"));
+    } else {
+      console.log(chalk.green("No changes to commit. Working tree clean."));
+    }
+  } catch (error) {
+    console.error(chalk.red("An error occurred:"), error.message);
   }
 };

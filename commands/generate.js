@@ -124,6 +124,7 @@ module.exports = async function generate() {
   // Step 5: Add the updated file and force-push to docs-br
   try {
     execSync("git add -f openapi.yaml"); // Add the updated file to the staging area
+    execSync(`git commit -m "Auto-generated OpenAPI spec"`);
     execSync("git push --force origin docs-br"); // Force-push the updated branch
     console.log(
       chalk.green("Successfully pushed OpenAPI spec to docs-br branch!")

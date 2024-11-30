@@ -66,7 +66,7 @@ module.exports = async function docs() {
 
                 // Step 4: Add the index.html file to staging
                 exec(
-                  ` echo "${htmlContent}" > index.html`,
+                  "git add index.html",
                   (gitAddErr, gitAddStdout, gitAddStderr) => {
                     if (gitAddErr) {
                       console.error(
@@ -75,50 +75,35 @@ module.exports = async function docs() {
                       );
                       return;
                     }
-                    // Step 4: Add the index.html file to staging
+
+                    // Step 5: Commit the updated index.html file
                     exec(
-                      "git add index.html",
-                      (gitAddErr, gitAddStdout, gitAddStderr) => {
-                        if (gitAddErr) {
+                      'git commit -m "Update index.html with generated API documentation"',
+                      (gitCommitErr, gitCommitStdout, gitCommitStderr) => {
+                        if (gitCommitErr) {
                           console.error(
-                            chalk.red("Failed to add index.html:"),
-                            gitAddStderr
+                            chalk.red("Failed to commit changes:"),
+                            gitCommitStderr
                           );
                           return;
                         }
 
-                        // Step 5: Commit the updated index.html file
+                        // Step 6: Push the changes to gh-pages
                         exec(
-                          'git commit -m "Update index.html with generated API documentation"',
-                          (gitCommitErr, gitCommitStdout, gitCommitStderr) => {
-                            if (gitCommitErr) {
+                          "git push origin gh-pages -f",
+                          (gitPushErr, gitPushStdout, gitPushStderr) => {
+                            if (gitPushErr) {
                               console.error(
-                                chalk.red("Failed to commit changes:"),
-                                gitCommitStderr
+                                chalk.red("Failed to push docs to gh-pages:"),
+                                gitPushStderr
                               );
-                              return;
+                            } else {
+                              console.log(
+                                chalk.green(
+                                  "Docs successfully pushed to gh-pages!"
+                                )
+                              );
                             }
-
-                            // Step 6: Push the changes to gh-pages
-                            exec(
-                              "git push origin gh-pages -f",
-                              (gitPushErr, gitPushStdout, gitPushStderr) => {
-                                if (gitPushErr) {
-                                  console.error(
-                                    chalk.red(
-                                      "Failed to push docs to gh-pages:"
-                                    ),
-                                    gitPushStderr
-                                  );
-                                } else {
-                                  console.log(
-                                    chalk.green(
-                                      "Docs successfully pushed to gh-pages!"
-                                    )
-                                  );
-                                }
-                              }
-                            );
                           }
                         );
                       }

@@ -6,6 +6,9 @@
     "auto-docs": "./index.js"
   },
   "main": "index.js",
+  "exports": {
+    "./middleware": "./auto-docs-middleware.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

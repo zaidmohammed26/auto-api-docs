@@ -48,34 +48,41 @@
 // };
 const chalk = require("chalk");
 const fs = require("fs");
+const glob = require("glob");
 const yaml = require("js-yaml");
 const { execSync } = require("child_process");
 
 module.exports = async function generate() {
   console.log(chalk.blue("Generating OpenAPI specification..."));
 
-  // Step 1: Checkout or create the docs-br branch
+  // Step 1: Ensure we are in the correct branch or create it if necessary
   try {
-    console.log(chalk.yellow("Checking out docs-br branch..."));
-    execSync("git checkout docs-br || git checkout --orphan docs-br");
-    console.log(chalk.green("Switched to docs-br branch!"));
-
-    // If orphan branch, make an initial commit
-    const status = execSync("git status --porcelain").toString().trim();
-    if (status) {
-      execSync("git add -A");
-      execSync('git commit -m "Initial commit on docs-br branch"');
+    const currentBranch = execSync("git branch --show-current")
+      .toString()
+      .trim();
+    if (currentBranch !== "docs-br") {
+      try {
+        // Check if docs-br branch exists
+        // execSync("git show-ref --verify --quiet refs/heads/docs-br");
+        execSync("git checkout docs-br");
+        console.log(chalk.green("Switching to existing docs-br branch..."));
+      } catch {
+        console.log(
+          chalk.yellow("docs-br branch doesn't exist. Creating it...")
+        );
+        execSync("git checkout -b docs-br");
+      }
     }
   } catch (error) {
     console.error(
-      chalk.red("Failed to switch to or create docs-br branch:"),
-      error.message
+      chalk.red("Git operation failed. Ensure you are in a git repository."),
+      error
     );
     return;
   }
 
-  // Step 2: Generate OpenAPI spec
-  const openapiSpec = {
+  // Step 2: Define a basic OpenAPI structure
+  let openapiSpec = {
     openapi: "3.0.0",
     info: {
       title: "API Documentation",
@@ -85,6 +92,26 @@ module.exports = async function generate() {
     paths: {},
   };
 
+  // Step 3: Scan for API route definitions
+  const files = glob.sync("src/**/*.js");
+  files.forEach((file) => {
+    const content = fs.readFileSync(file, "utf-8");
+
+    if (content.includes("app.get")) {
+      openapiSpec.paths["/example"] = {
+        get: {
+          summary: "Example endpoint",
+          responses: {
+            200: {
+              description: "Successful response",
+            },
+          },
+        },
+      };
+    }
+  });
+
+  // Step 4: Write the OpenAPI spec to a YAML file
   const outputFile = "openapi.yaml";
   try {
     fs.writeFileSync(outputFile, yaml.dump(openapiSpec));
@@ -94,18 +121,18 @@ module.exports = async function generate() {
     return;
   }
 
-  // Step 3: Push changes to docs-br
+  // Step 5: Add the updated file and force-push to docs-br
   try {
-    execSync("git add -f openapi.yaml");
-    execSync('git commit -m "Auto-generated OpenAPI spec" --allow-empty');
-    execSync("git push --set-upstream origin docs-br --force");
+    execSync("git add -f openapi.yaml"); // Add the updated file to the staging area
+    // execSync(`git commit -m "Auto-generated OpenAPI spec"`);
+    execSync("git push --force origin docs-br"); // Force-push the updated branch
     console.log(
       chalk.green("Successfully pushed OpenAPI spec to docs-br branch!")
     );
   } catch (error) {
     console.error(
       chalk.red("Failed to push changes to docs-br branch:"),
-      error.message
+      error
     );
   }
 };

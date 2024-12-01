@@ -53,13 +53,13 @@ module.exports = async function generate() {
     );
     logData.forEach((entry) => {
       const { method, url, headers, query, body, params, timestamp } = entry;
-
+      const firstWordAfterSlash = url.split("/")[1];
       if (!openapiSpec.paths[url]) {
         openapiSpec.paths[url] = {}; // Initialize the path object
       }
 
       openapiSpec.paths[url][method.toLowerCase()] = {
-        tags: ["Default"],
+        tags: [firstWordAfterSlash || "Default"],
         summary: `Handle ${method} request for ${url}`,
         operationId: `${method}${url.replace(/[^\w]/g, "")}`,
         parameters: [],

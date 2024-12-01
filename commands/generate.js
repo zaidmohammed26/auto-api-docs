@@ -53,7 +53,7 @@ module.exports = async function generate() {
     );
 
     logData.forEach((entry) => {
-      const { method, url } = entry;
+      const { method, url, headers, query, body, params, timestamp } = entry;
 
       if (!openapiSpec.paths[url]) {
         openapiSpec.paths[url] = {}; // Initialize the path object
@@ -65,16 +65,45 @@ module.exports = async function generate() {
         operationId: `${method}${url.replace(/[^\w]/g, "")}`,
         parameters: [],
         requestBody: {
-          description: "",
-          content: {},
+          description: `Request body for ${method} ${url}`,
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  ...body, // Include the body properties dynamically
+                },
+              },
+            },
+          },
           required: method === "POST", // Require body only for POST requests
         },
         responses: {
           200: {
             description: "Successful response",
-            headers: {},
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  properties: {
+                    status: { type: "string" },
+                    message: { type: "string" },
+                  },
+                },
+              },
+            },
+          },
+          400: {
+            description: "Invalid input",
+          },
+          404: {
+            description: "Not Found",
           },
         },
+        headers: headers, // Include headers from the log
+        queryParams: query, // Include query params from the log
+        params: params, // Include params from the log
+        timestamp: timestamp, // Timestamp of the request
         deprecated: false,
         security: [],
       };

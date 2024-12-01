@@ -22,7 +22,9 @@ module.exports = async function generate() {
         );
         execSync("git checkout -b docs-br");
         execSync("git add -A");
-        execSync('git commit -m "Initial commit on docs-br branch"');
+        execSync(
+          'git commit -m "Initial commit on docs-br branch" --allow-empty'
+        );
       }
     }
   } catch (error) {

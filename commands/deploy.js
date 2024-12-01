@@ -7,7 +7,7 @@ module.exports = async function deploy() {
   // Create the commands to run
   const commands = [
     // Fetch gh-pages and create if not exists
-    "git fetch origin gh-pages || git checkout --orphan gh-pages",
+    `git fetch origin gh-pages || (git checkout --orphan gh-pages && git add -A && git commit -m "Initial commit on gh-pages branch")`,
     // "git reset --hard",
     // "git clean -fd",
     "git checkout docs-br", // Ensure you are on the main branch

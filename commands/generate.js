@@ -21,6 +21,8 @@ module.exports = async function generate() {
           chalk.yellow("docs-br branch doesn't exist. Creating it...")
         );
         execSync("git checkout -b docs-br");
+        execSync("git add -A");
+        execSync('git commit -m "Initial commit on docs-br branch"');
       }
     }
   } catch (error) {

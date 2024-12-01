@@ -14,7 +14,6 @@ module.exports = async function deploy() {
     "git subtree split --prefix docs -b gh-pages-temp", // Create temp branch from docs folder
     "git push origin gh-pages-temp:gh-pages -f", // Force push the temp branch to gh-pages
     "git branch -D gh-pages-temp", // Clean up the temp branch
-    `git add -A && git commit -m "Initial commit on gh-pages branch" --allow-empty && git push origin gh-pages`,
   ];
 
   // Function to run a command and log the results

@@ -59,7 +59,7 @@ module.exports = async function generate() {
       }
 
       openapiSpec.paths[url][method.toLowerCase()] = {
-        tags: [firstWordAfterSlash || "Default"],
+        tags: [firstWordAfterSlash || "Home"],
         summary: `Handle ${method} request for ${url}`,
         operationId: `${method}${url.replace(/[^\w]/g, "")}`,
         parameters: [],

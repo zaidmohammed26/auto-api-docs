@@ -51,7 +51,6 @@ module.exports = async function generate() {
     const logData = JSON.parse(
       fs.readFileSync("src/auto-docs-log.json", "utf-8")
     );
-
     logData.forEach((entry) => {
       const { method, url, headers, query, body, params, timestamp } = entry;
 

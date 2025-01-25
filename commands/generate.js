@@ -48,9 +48,7 @@ module.exports = async function generate() {
 
   // Step 3: Parse the auto-docs-log.json file
   try {
-    const logData = JSON.parse(
-      fs.readFileSync("src/auto-docs-log.json", "utf-8")
-    );
+    const logData = JSON.parse(fs.readFileSync("/auto-docs-log.json", "utf-8"));
     logData.forEach((entry) => {
       const { method, url, headers, query, body, params, timestamp } = entry;
       const firstWordAfterSlash = url.split("/")[1];

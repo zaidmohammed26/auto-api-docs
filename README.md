@@ -3,7 +3,7 @@
 
 This tool is published as an NPM package. [Reference to the NPM package](https://www.npmjs.com/package/auto-docs-cli)
 
-Co-Contributor for this project is [Kamran Mohammed](https://github.com/Kamran-Mohammed)
+Co-Contributor for this project is [Kamran Mohammed](https://github.com/Kamran-Mohammed), [Sufiyan](https://github.com/SufiyanMohammed07), [Abdul Rahman](https://github.com/Abdulrahman479).
 
 # Features
 - Adds auto-docs.yml file in the .github/workflows in the users repository which enables automation.
